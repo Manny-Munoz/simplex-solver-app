@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:simplex/components/button_assistant.dart';
+import 'package:simplex/welcome_page.dart';
 
 void main() {
   runApp(SimplexApp());
@@ -8,12 +10,13 @@ class SimplexApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SimplexScreen(),
+      debugShowCheckedModeBanner: false,
+      home: WelcomePage(),
     );
   }
 }
 
-class SimplexScreen extends StatefulWidget {
+class SimplexScreen extends StatefulWidget {  
   @override
   _SimplexScreenState createState() => _SimplexScreenState();
 }
@@ -70,8 +73,8 @@ class _SimplexScreenState extends State<SimplexScreen> {
               child: Text(coef.toString()),
             ))
         .toList();
-    objectiveRow.add(Padding(
-      padding: const EdgeInsets.all(8.0),
+    objectiveRow.add(const Padding(
+      padding: EdgeInsets.all(8.0),
       child: Text("Función Objetivo"),
     ));
 
@@ -101,8 +104,10 @@ class _SimplexScreenState extends State<SimplexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255,189, 174, 147),
       appBar: AppBar(
-        title: Text('Método Simplex'),
+        title: const Text('Método Simplex', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color.fromARGB(255, 58, 49, 42),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -125,47 +130,59 @@ class _SimplexScreenState extends State<SimplexScreen> {
                     child: Text(value),
                   );
                 }).toList(),
-                decoration: InputDecoration(labelText: 'Operación'),
+                decoration: const InputDecoration(labelText: 'Operación', labelStyle: TextStyle(color: Colors.black)),
               ),
               TextFormField(
                 controller: _objectiveController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     labelText: 'Función Objetivo (ej: 3,5 para 3x + 5y)'),
               ),
               TextFormField(
                 controller: _restrictionController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     labelText:
                         'Agregar Restricción (ej: 2,3 para 2x + 3y <= rhs)'),
               ),
               TextFormField(
                 controller: _rhsController,
                 decoration:
-                    InputDecoration(labelText: 'Valor RHS de la restricción'),
+                    const InputDecoration(labelText: 'Valor RHS de la restricción'),
               ),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _addRestriction,
-                child: Text('Agregar Restricción'),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                ),
+                child: const Text('Agregar Restricción', style: TextStyle(color: Colors.black)),
               ),
-              SizedBox(height: 16),
-              Text('Restricciones agregadas:'),
+              const SizedBox(height: 16),
+              const Text('Restricciones agregadas:'),
+              const SizedBox(height: 8),
               ..._restrictions
                   .asMap()
                   .entries
                   .map((entry) => Text(
                       '${entry.value.toString()} ${_operation == 'Minimizar' ? '>=' : '<='} ${_rhs[entry.key]}'))
                   .toList(),
-              SizedBox(height: 16),
-              Text('Tabla Simplex:'),
+              const SizedBox(height: 16),
+              const Text('Tabla Simplex:'),
+              const SizedBox(height: 8),
               if (_objectiveFunction.isNotEmpty && _restrictions.isNotEmpty)
                 _buildSimplexTable(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _solveSimplex,
-                child: Text('Resolver'),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                ),
+                child: const Text('Resolver', style: TextStyle(color: Colors.black),),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (_solution.isNotEmpty) Text('Solución: $_solution'),
+              const SizedBox(height: 16),
+              ButtonAssistant(),
+              const SizedBox(height: 16),
             ],
           ),
         ),
