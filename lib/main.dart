@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simplex/components/button_assistant.dart';
+import 'package:simplex/welcome_page.dart';
 
 void main() {
   runApp(SimplexApp());
@@ -9,12 +10,13 @@ class SimplexApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SimplexScreen(),
+      debugShowCheckedModeBanner: false,
+      home: WelcomePage(),
     );
   }
 }
 
-class SimplexScreen extends StatefulWidget {
+class SimplexScreen extends StatefulWidget {  
   @override
   _SimplexScreenState createState() => _SimplexScreenState();
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ButtonAssistant extends StatelessWidget {
+  const ButtonAssistant({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +12,9 @@ class ButtonAssistant extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           padding: const EdgeInsets.all(40),
-          backgroundColor: Color.fromARGB(240, 21, 52, 72),
+          backgroundColor: const Color.fromARGB(240, 21, 52, 72),
           ),
-        child: const Text("Virtual \n Assistant", style: TextStyle(color: Colors.white, ),),
+        child: const Text("Virtual \n Assistant", style: TextStyle(color: Colors.white ),textAlign: TextAlign.center,),
         ),
     );
   }
