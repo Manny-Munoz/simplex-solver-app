@@ -33,6 +33,7 @@ class _SimplexScreenState extends State<SimplexScreen> {
   final TextEditingController _restrictionController = TextEditingController();
   final TextEditingController _rhsController = TextEditingController();
   String _solution = '';
+  List<Widget> _solutionSteps = [];
 
   void _addRestriction() {
     setState(() {
@@ -46,6 +47,19 @@ class _SimplexScreenState extends State<SimplexScreen> {
       _rhsController.clear();
     });
   }
+void _resetForm() {
+  setState(() {
+    _operation = 'Maximizar';
+    _objectiveController.clear();
+    _restrictionController.clear();
+    _rhsController.clear();
+    _objectiveFunction = [];
+    _restrictions = [];
+    _rhs = [];
+    _solution = '';
+    _solutionSteps = [];
+  });
+}
 
   void _solveSimplex() {
     setState(() {
@@ -58,9 +72,9 @@ class _SimplexScreenState extends State<SimplexScreen> {
       Simplex simplex = Simplex(
           _objectiveFunction, _restrictions, _rhs, _operation == 'Maximizar');
       _solution = simplex.solve();
-      
-      List<String> steps = simplex.getSteps();
-      _solution += '\n\nPasos:\n' + steps.join('\n');
+
+      // Aquí obtenemos los pasos para mostrarlos en la interfaz
+      _solutionSteps = simplex.getSteps();
     });
   }
 
@@ -104,7 +118,7 @@ class _SimplexScreenState extends State<SimplexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255,189, 174, 147),
+      backgroundColor: const Color.fromARGB(255, 189, 174, 147),
       appBar: AppBar(
         title: const Text('Método Simplex', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 58, 49, 42),
@@ -130,7 +144,10 @@ class _SimplexScreenState extends State<SimplexScreen> {
                     child: Text(value),
                   );
                 }).toList(),
-                decoration: const InputDecoration(labelText: 'Operación', labelStyle: TextStyle(color: Colors.black)),
+                decoration: const InputDecoration(
+                  labelText: 'Operación', 
+                  labelStyle: TextStyle(color: Colors.black)
+                ),
               ),
               TextFormField(
                 controller: _objectiveController,
@@ -140,21 +157,22 @@ class _SimplexScreenState extends State<SimplexScreen> {
               TextFormField(
                 controller: _restrictionController,
                 decoration: const InputDecoration(
-                    labelText:
-                        'Agregar Restricción (ej: 2,3 para 2x + 3y <= rhs)'),
+                    labelText: 'Agregar Restricción (ej: 2,3 para 2x + 3y <= rhs)'),
               ),
               TextFormField(
                 controller: _rhsController,
-                decoration:
-                    const InputDecoration(labelText: 'Valor RHS de la restricción'),
+                decoration: const InputDecoration(
+                    labelText: 'Valor RHS de la restricción'),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _addRestriction,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      const Color.fromARGB(255, 215, 155, 38)),
                 ),
-                child: const Text('Agregar Restricción', style: TextStyle(color: Colors.black)),
+                child: const Text('Agregar Restricción', 
+                  style: TextStyle(color: Colors.black)),
               ),
               const SizedBox(height: 16),
               const Text('Restricciones agregadas:'),
@@ -174,12 +192,28 @@ class _SimplexScreenState extends State<SimplexScreen> {
               ElevatedButton(
                 onPressed: _solveSimplex,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      const Color.fromARGB(255, 215, 155, 38)),
                 ),
-                child: const Text('Resolver', style: TextStyle(color: Colors.black),),
+                child: const Text('Resolver', 
+                  style: TextStyle(color: Colors.black)),
               ),
               const SizedBox(height: 16),
-              if (_solution.isNotEmpty) Text('Solución: $_solution'),
+              ElevatedButton(
+                onPressed: _resetForm,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                    const Color.fromARGB(255, 215, 38, 38)), // Color rojo para el botón de reinicio
+                ),
+                  child: const Text('Reiniciar', 
+                  style: TextStyle(color: Colors.white)),
+                ),
+              const SizedBox(height: 16),
+              if (_solution.isNotEmpty) 
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _solutionSteps, // Mostramos los pasos aquí
+                ),
               const SizedBox(height: 16),
               ButtonAssistant(),
               const SizedBox(height: 16),
@@ -196,7 +230,7 @@ class Simplex {
   final List<List<double>> restrictions;
   final List<double> rhs;
   final bool isMaximization;
-  List<String> steps = [];
+  List<Widget> steps = [];
 
   Simplex(this.objectiveFunction, this.restrictions, this.rhs, this.isMaximization);
 
@@ -204,32 +238,32 @@ class Simplex {
     int numVars = objectiveFunction.length;
     int numConstraints = restrictions.length;
 
-    // Crear la tabla inicial del simplex
     List<List<double>> tableau = List.generate(
         numConstraints + 1, (i) => List.filled(numVars + numConstraints + 1, 0));
 
-    // Rellenar las restricciones en la tabla
     for (int i = 0; i < numConstraints; i++) {
       for (int j = 0; j < numVars; j++) {
         tableau[i][j] = restrictions[i][j];
       }
-      tableau[i][numVars + i] = 1; // Variables de holgura
+      tableau[i][numVars + i] = 1; 
       tableau[i][tableau[i].length - 1] = rhs[i];
     }
 
-    // Registrar tabla inicial
-    steps.add('Tabla inicial:\n' + _tableauToString(tableau));
+    steps.add(Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Tabla inicial:'),
+        _buildTableFromMatrix(tableau),
+      ],
+    ));
 
-    // Rellenar la fila de la función objetivo
     for (int j = 0; j < numVars; j++) {
       tableau[numConstraints][j] = isMaximization
-          ? -objectiveFunction[j] // Para maximizar, invierte el signo
-          : objectiveFunction[j];  // Para minimizar, no cambies el signo
+          ? -objectiveFunction[j] 
+          : objectiveFunction[j];  
     }
 
-    // Método simplex
     while (true) {
-      // Encontrar la columna pivote (entra en la base)
       int pivotCol = 0;
       for (int j = 1; j < tableau[0].length - 1; j++) {
         if (tableau[numConstraints][j] < tableau[numConstraints][pivotCol]) {
@@ -237,33 +271,31 @@ class Simplex {
         }
       }
       if (tableau[numConstraints][pivotCol] >= 0) {
-        // Solución óptima encontrada
-        steps.add('Solución óptima encontrada.');
+        steps.add(Text('Solución óptima encontrada.'));
         break;
       }
 
-      steps.add('Columna pivote: $pivotCol');
+      steps.add(Text('Columna pivote: $pivotCol'));
 
-      // Encontrar la fila pivote (sale de la base)
       int pivotRow = -1;
       double minRatio = double.infinity;
       for (int i = 0; i < numConstraints; i++) {
         if (tableau[i][pivotCol] > 0) {
-          double ratio = tableau[i][tableau[i].length - 1] / tableau[i][pivotCol];
+          double ratio = tableau[i][tableau[0].length - 1] / tableau[i][pivotCol];
           if (ratio < minRatio) {
             minRatio = ratio;
             pivotRow = i;
           }
         }
       }
+
       if (pivotRow == -1) {
-        steps.add('No hay solución factible.');
-        return 'No hay solución';
+        steps.add(Text('El problema no tiene solución acotada.'));
+        return 'El problema no tiene solución acotada.';
       }
 
-      steps.add('Fila pivote: $pivotRow');
+      steps.add(Text('Fila pivote: $pivotRow'));
 
-      // Realizar pivotación
       double pivotValue = tableau[pivotRow][pivotCol];
       for (int j = 0; j < tableau[0].length; j++) {
         tableau[pivotRow][j] /= pivotValue;
@@ -277,16 +309,20 @@ class Simplex {
         }
       }
 
-      steps.add('Tabla después de pivotar:\n' + _tableauToString(tableau));
+      steps.add(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Tabla después de pivotar:'),
+          _buildTableFromMatrix(tableau),
+        ],
+      ));
     }
 
-    // Leer la solución
     List<double> solution = List.filled(numVars, 0);
     for (int j = 0; j < numVars; j++) {
       bool isBasic = false;
       double val = 0.0;
-      
-      // Verifica si la columna es básica (solo 1 en una fila y ceros en otras)
+
       for (int i = 0; i < numConstraints; i++) {
         if (tableau[i][j] == 1.0 && !isBasic) {
           isBasic = true;
@@ -297,22 +333,36 @@ class Simplex {
         }
       }
 
-      // Asignar valor solo si la columna es básica
       if (isBasic) {
         solution[j] = val;
       }
     }
 
     double optimalValue = tableau[numConstraints][tableau[0].length - 1];
-    steps.add('Valor óptimo: $optimalValue, Variables: ${solution.toString()}');
+    steps.add(Text('Valor óptimo: $optimalValue, Variables: ${solution.toString()}'));
+
     return 'Valor óptimo: $optimalValue, Variables: ${solution.toString()}';
   }
 
-  String _tableauToString(List<List<double>> tableau) {
-    return tableau.map((row) => row.map((val) => val.toStringAsFixed(2)).join('  ')).join('\n');
+  Widget _buildTableFromMatrix(List<List<double>> matrix) {
+    return Table(
+      border: TableBorder.all(),
+      defaultColumnWidth: const IntrinsicColumnWidth(),
+      children: matrix.map((row) {
+        return TableRow(
+          children: row.map((value) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(value.toStringAsFixed(2)),
+            );
+          }).toList(),
+        );
+      }).toList(),
+    );
   }
 
-  List<String> getSteps() {
+  List<Widget> getSteps() {
     return steps;
   }
 }
+
