@@ -9,7 +9,7 @@ void main() {
 class SimplexApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: WelcomePage(),
     );
@@ -104,10 +104,11 @@ class _SimplexScreenState extends State<SimplexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255,189, 174, 147),
+      backgroundColor: const Color.fromARGB(255, 252,235,211),
       appBar: AppBar(
         title: const Text('Método Simplex', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 58, 49, 42),
+        backgroundColor: const Color.fromARGB(255, 151,80,27),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -152,9 +153,15 @@ class _SimplexScreenState extends State<SimplexScreen> {
               ElevatedButton(
                 onPressed: _addRestriction,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 194,110,49)),
+                  fixedSize: MaterialStateProperty.all<Size>(const Size(300, 40)),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.5),
+                    ),
+                  ),
                 ),
-                child: const Text('Agregar Restricción', style: TextStyle(color: Colors.black)),
+                child: const Text('Agregar Restricción', style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
               ),
               const SizedBox(height: 16),
               const Text('Restricciones agregadas:'),
@@ -174,14 +181,20 @@ class _SimplexScreenState extends State<SimplexScreen> {
               ElevatedButton(
                 onPressed: _solveSimplex,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 215, 155, 38)),
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 194,110,49)),
+                  fixedSize: MaterialStateProperty.all<Size>(const Size(300, 40)),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.5),
+                    ),
+                  ),
                 ),
-                child: const Text('Resolver', style: TextStyle(color: Colors.black),),
+                child: const Text('Resolver', style: TextStyle(color: Color.fromARGB(255, 253, 253, 253)),),
               ),
               const SizedBox(height: 16),
               if (_solution.isNotEmpty) Text('Solución: $_solution'),
               const SizedBox(height: 16),
-              ButtonAssistant(),
+              const ButtonAssistant(),
               const SizedBox(height: 16),
             ],
           ),
